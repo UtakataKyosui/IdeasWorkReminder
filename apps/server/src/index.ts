@@ -9,20 +9,23 @@ const app = new Hono<{
 const scheduled: ExportedHandlerScheduledHandler<Cloudflare.Env> = async(_event,env,_ctx) => {
 	try {
 		const repos = await getRepos()
-		const progresses = await Promise.all(repos.map(async (repo) => {
-			const progress = await getProgress(repo.name)
-			return {
-				repo: repo.name,
-				progress,
-			}
-		}))
+		const progresses = (
+			await Promise.all(
+			  repos.map(async (repo) => {
+				const progress = await getProgress(repo.name);
+				return progress ? { repo: `${repo.owner.login}/${repo.name}`, progress } : null;
+			  })
+			)
+		  ).filter((p): p is { repo: string; progress: any } => p !== null);
+		  
 
-		const embeds: Array<APIEmbed> = progresses.map(p => ({
-			title: p.repo,
-			description: `進捗： ${p.progress.progress}`,
-			color: 0x00ff00,
-			timestamp: new Date().toISOString()
-		}))
+		const embeds: Array<APIEmbed> = progresses
+			.map(p => ({
+				title: p.repo,
+				description: `進捗： ${p.progress.progress}`,
+				color: 0x00ff00,
+				timestamp: new Date().toISOString()
+			}))
 
 		const body: RESTPostAPIWebhookWithTokenJSONBody = {
 			username: "Idea Development Supporter",

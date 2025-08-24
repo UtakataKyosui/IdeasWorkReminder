@@ -38,6 +38,11 @@ async function getIssues(repo: string) {
  */
 async function getProgress(repo: string) {
 	const issues = await getIssues(repo)
+
+	if (issues.length === 0) {
+		return null; // Issueがないので除外
+	  }
+
 	const openIssues = issues.filter((issue) => issue.state === "open")
 	const progress = openIssues.length / issues.length
 	return {
