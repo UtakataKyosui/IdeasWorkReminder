@@ -6,7 +6,7 @@ const app = new Hono<{
 	Bindings: Cloudflare.Env
 }>();
 
-const scheduled: ExportedHandlerScheduledHandler<Cloudflare.Env> = async(event,env,ctx) => {
+const scheduled: ExportedHandlerScheduledHandler<Cloudflare.Env> = async(_event,env,_ctx) => {
 	const repos = await getRepos()
 	const progresses = await Promise.all(repos.map(async (repo) => {
 		const progress = await getProgress(repo.name)
