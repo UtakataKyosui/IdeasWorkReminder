@@ -25,7 +25,7 @@ const scheduled: ExportedHandlerScheduledHandler<Cloudflare.Env> = async(_event,
 				description: `進捗： ${p.progress.progress}`,
 				color: 0x00ff00,
 				timestamp: new Date().toISOString()
-			}))
+			} satisfies APIEmbed))
 
 		const body: RESTPostAPIWebhookWithTokenJSONBody = {
 			username: "Idea Development Supporter",

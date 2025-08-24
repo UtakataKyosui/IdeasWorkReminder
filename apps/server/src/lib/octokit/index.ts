@@ -11,7 +11,8 @@ const octokit = new Octokit({
  */
 async function getRepos() {
 	const {data} = await octokit.rest.repos.listForAuthenticatedUser({
-		per_page: 10,
+		per_page: 100,
+		sort: "updated",
 		direction: "desc",
 		affiliation: "owner"
 	})
