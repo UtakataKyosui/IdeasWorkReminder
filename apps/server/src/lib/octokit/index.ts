@@ -13,6 +13,7 @@ async function getRepos() {
 	const {data} = await octokit.rest.repos.listForAuthenticatedUser({
 		per_page: 10,
 		direction: "desc",
+		affiliation: "owner"
 	})
 	return data
 }
