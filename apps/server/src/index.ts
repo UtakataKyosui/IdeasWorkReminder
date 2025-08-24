@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import type { RESTPostAPIWebhookWithTokenJSONBody } from "discord-api-types/v10";
 import { getProgress, getRepos } from "./lib/octokit";
+import { error } from "node:console";
  
 const app = new Hono<{
 	Bindings: Cloudflare.Env
@@ -34,7 +35,7 @@ const scheduled: ExportedHandlerScheduledHandler<Cloudflare.Env> = async(_event,
 			"Content-Type": "application/json"
 		},
 		body: JSON.stringify(body)
-	})
+	}).catch(error => error(JSON.stringify(error)))
 }
 
 export default {
