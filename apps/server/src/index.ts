@@ -1,21 +1,43 @@
-import { env } from "cloudflare:workers";
 import { Hono } from "hono";
-import { cors } from "hono/cors";
-import { logger } from "hono/logger";
+import type { RESTPostAPIWebhookWithTokenJSONBody } from "discord-api-types/v10";
+import { getProgress, getRepos } from "./lib/octokit";
+ 
+const app = new Hono<{
+	Bindings: Cloudflare.Env
+}>();
 
-const app = new Hono();
+const scheduled: ExportedHandlerScheduledHandler<Cloudflare.Env> = async(event,env,ctx) => {
+	const repos = await getRepos()
+	const progresses = await Promise.all(repos.map(async (repo) => {
+		const progress = await getProgress(repo.name)
+		return {
+			repo: repo.name,
+			progress,
+		}
+	}))
 
-app.use(logger());
-app.use(
-	"/*",
-	cors({
-		origin: env.CORS_ORIGIN || "",
-		allowMethods: ["GET", "POST", "OPTIONS"],
-	}),
-);
+	const body: RESTPostAPIWebhookWithTokenJSONBody = {
+		username: "Idea Development Supporter",
+		content: progresses.map(p => `
+			${p.repo}: ${p.progress.progress}
+			${p.progress.openIssues.map(p => 
+				`
+				${p.issue}: ${p.body}
+				`
+			).join("¥n")}
+		`).join("¥n")
+	}
 
-app.get("/", (c) => {
-	return c.text("OK");
-});
+	await fetch(env.DISCORD_WEBHOOK_URL,{
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json"
+		},
+		body: JSON.stringify(body)
+	})
+}
 
-export default app;
+export default {
+	fetch: app.fetch,
+	scheduled,
+} satisfies ExportedHandler<Cloudflare.Env>
